@@ -8,43 +8,42 @@
 #
 
 library(shiny)
-
+library(ggplot2)
+data(mtcars)
 # Define UI for application that draws a histogram
 ui <- fluidPage(
-   
-   # Application title
-   titlePanel("Old Faithful Geyser Data"),
-   
-   # Sidebar with a slider input for number of bins 
-   sidebarLayout(
-      sidebarPanel(
-         sliderInput("bins",
-                     "Number of bins:",
-                     min = 1,
-                     max = 50,
-                     value = 30)
-      ),
-      
-      # Show a plot of the generated distribution
-      mainPanel(
-         plotOutput("distPlot")
-      )
-   )
+  
+  # Application title
+  titlePanel("Cars dataset mpg"),
+  
+  # Sidebar with a slider input for number of bins 
+  sidebarLayout(
+    sidebarPanel(
+      selectInput("mpgfactor",
+                  "Factor:",
+                  choices=colnames(mtcars)[which(colnames(mtcars)!="mpg" & colnames(mtcars)!="cyl")])
+    ),
+    
+    # Show a plot of the generated distribution
+    mainPanel(
+      plotOutput("mpgPlot")
+    )
+  )
 )
 
 # Define server logic required to draw a histogram
 server <- function(input, output) {
-   
-   output$distPlot <- renderPlot({
-      # generate bins based on input$bins from ui.R
-      x    <- faithful[, 2] 
-      bins <- seq(min(x), max(x), length.out = input$bins + 1)
-      
-      # draw the histogram with the specified number of bins
-      hist(x, breaks = bins, col = 'darkgray', border = 'white')
-   })
+  
+  output$mpgPlot <- renderPlot({
+    # generate y based on input$factor from ui.R
+    x<-input$mpgfactor
+    # draw the histogram with the specified number of bins
+    #plot(mtcars[,x],mtcars[,"mpg"],ylab="mpg",xlab=y,main=y)
+    data.mtcars.shiny<-as.data.frame(cbind(mtcars[,input$mpgfactor],mtcars[,c("cyl","mpg")]))
+    colnames(data.mtcars.shiny)<-c("mpgfactor","cyl","mpg")
+    ggplot(data.mtcars.shiny,aes(x=mpgfactor,y=mpg,fill=factor(cyl)))+geom_point(size=5,shape=21)+xlab(input$mpgfactor)+theme(axis.text=element_text(size=14,face="bold"),axis.title=element_text(size=14,face="bold"),legend.title =element_text(size=14,face="bold"),legend.text =element_text(size=14,face="bold"))+scale_fill_discrete("cyl")
+  })
 }
 
 # Run the application 
 shinyApp(ui = ui, server = server)
-
